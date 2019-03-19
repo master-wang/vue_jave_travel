@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" type="text/css" href="../publi/css/bootstrap.css">
+    <link rel="stylesheet" type="text/css" href="./css/index.css">
+    <link rel="stylesheet" type="text/css" href="./css/jijie.css">
+    <link rel="stylesheet" type="text/css" href="./css/login_regist.css">
+    <link rel="stylesheet" type="text/css" href="./css/cities_list.css">
+    <script src='../publi/js/jquery.js'></script>
+    <script src="../publi/js/bootstrap.js"></script>
+    <script src="../publi/js/vue.js"></script>
+    <script src="../publi/js/vue-router.js"></script>
+    <script src="../publi/js/vue-resource.js"></script>
+    <script src="../publi/js/axios.js"></script>
+    <script src="./js/index.js"></script>
+    
+    <title>首页</title>
+</head>
+<body>
+    <div id="app">
+        <!-- 导航栏 -->
+        <nav class="navbar navbar-default navbar-inverse">
+            <div class="container-fluid">
+                <div class="logo-img"><img src="./imgs/login.png" alt=""></div>
+                <div class="navbar-header">
+                    <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    </button>
+                    <a class="navbar-brand" href="#" @click="index_view()">首页</a>
+                </div>
+          
+            
+               <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                <ul class="nav navbar-nav">
+                  <li><a href="javascript:;" @click="jijie_view()">风景四季</a></li>
+                  <li><a href="#">{{weather.mouthDay}}</a></li>
+                  <li><a href="#">  </a></li>
+                  <li><a href="#"> {{weather.city}} </a></li>
+                  <li><a href="#">{{weather.wendu}}</a></li>
+                </ul>
+                <!-- <form class="navbar-form navbar-left">
+                  <div class="form-group">
+                    <input type="text" class="form-control" placeholder="...搜索旅游景点" style="color: rgb(255,157,0);">
+                  </div>
+                  <button type="submit" class="btn btn-default " id="bar-btn" style="color: rgb(255,157,0);" @click="all_cities_view()">查询</button>
+                </form> -->
+                <ul class="nav navbar-nav navbar-right" >
+                    <li style="color:rgb(255,157,0);" @mouseenter="my_cities_view()" @mouseleave="my_cities_hide_view()">
+                        <a href="javascript:;"><i class="iconfont"></i> {{city}} /{{city_ci}} / 切换城市</a>
+                        
+                        <div id="ditu" v-if="my_cities_stadus">
+                            <a href="javascript:;" v-for="cit in cities" :value="cit.bishe_province_name" @click="cities_cp(cit.bishe_province_name,cit.bishe_province_id)" :class="{ 'selected':cit.bishe_province_name===city }" >{{cit.bishe_province_name}}</a>
+                        </div>
+                        <div class="ditu_cities" v-if="my_cities_stadus">
+                            <a href="javascript:;" v-for="cit in city_cis" :value="cit.bishe_city_name" @click="city_ci_cp(cit.bishe_city_name)" :class="{ 'selected':cit.bishe_city_name===city_ci }" >{{cit.bishe_city_name}}</a>
+                        </div>
+                    </li>
+                    <li v-if="!is_login"><a href="javascript:;"  data-toggle="modal" data-target="#myModal" @click="login_resist_view()">注册/登录</a></li>
+                    <li v-if="is_login"><img id="user_youxiang" :src="user_touxiang" alt=""></li>
+                    <li class="dropdown" v-if="!isAdmin&&is_login">
+                        <a id="navbar-right" href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">{{user.object.bishe_register_username}}<span class="caret"></span></a>
+                        <ul class="dropdown-menu">
+                        <li><a href="javascript:;"  data-toggle="modal" data-target="#myModal" @click="update_password_view()">修改密码</a></li>
+                        <li><a href="javascript:;" @click="my_collection_view()">我的收藏</a></li>
+                        <li><a href="javascript:;"  data-toggle="modal" data-target="#myModal"  @click="upadete_userinfo_view()">完善个人信息</a></li>
+                        <li role="separator" class="divider"></li>
+                        <li><a href="javascript:;"  data-toggle="modal" data-target="#myModal" @click="login_out_view()">退出登录</a></li>
+                        </ul>
+                    </li>
+                   
+                    <li class="dropdown" v-if="isAdmin&&is_login">
+                        <a id="navbar-right" href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">管理员：{{user.object.bishe_register_username}}<span class="caret"></span></a>
+                        <ul class="dropdown-menu">
+                        <li><a href="javascript:;"  data-toggle="modal" data-target="#myModal" @click="update_password_view()">修改密码</a></li>
+                        <li><a href="javascript:;" @click="my_collection_view()">我的收藏</a></li>
+                        <li><a href="javascript:;"  data-toggle="modal" data-target="#myModal"  @click="upadete_userinfo_view()">完善个人信息</a></li>
+                        <li><a href="../admin/admin.html" style="color: rgb(255,157,0);">进入后台管理系统</a></li>
+                        <li role="separator" class="divider"></li>
+                        <li><a href="javascript:;"  data-toggle="modal" data-target="#myModal" @click="login_out_view()">退出登录</a></li>
+                        </ul>
+                    </li>
+                </ul>
+              </div>
+            </div>
+        </nav>
+        <!-- 主页的页面 -->
+        <div v-if="index_stadus">
+                <div class="round">
+                    <div class="slide" v-on:mouseover="stop()" v-on:mouseout="move()">
+                        <div class="slideshow">
+                        <transition-group tag="ul" name="image">
+                            <li v-for="(img, index) in roundImgs" v-show="index===mark || index===(mark%4+1)" :key="index">
+                            <a href="#">
+                                <img :src='img'>
+                            </a>
+                            </li>
+                        </transition-group>
+                        </div>
+            
+                        <div class="bullet">
+                        <img v-for="(item, index) in roundImgs" :class="{ 'active':index===mark+1 }"
+                        @click="change(index-1)" :key="index" :src="item"></img>
+                        </div>
+            
+                    </div>
+            
+                    <div class="round-find center-block">
+                            <form class="navbar-form navbar-left">
+                                <div class="form-group">
+                                    <input type="text" class="form-control" placeholder="...搜索旅游景点" style="color: rgb(255,157,0);">
+                                </div>
+                                <button type="submit" class="btn btn-default " id="bar-btn" style="color: rgb(255,157,0);"  @click="all_cities_view()">查询</button>
+                            </form>
+                    </div>
+                </div>
+            
+            
+                <div class="weather">
+                    <a href="javascript:;" @click="jijie_view()">
+                    <div class="jijie" v-for="img in jijieImgs">
+                        <div class="kind">春天</div>
+                        <img :src="img.url" alt="">
+                    </div>
+                    </a>
+                </div>
+        </div>
+
+        <!-- 四季的季节 -->
+        <div v-if="jijie_stadus" class="jijie_index">
+                <div class="contain shoufengq">
+                    <ul>
+                        <li v-for="(img,index) in jijieImgs" >
+                            <a href="javascript:;">
+                                <img :src="img.url" />
+                            </a>
+                            <div class="title">
+                                <a href="#">{{img.derection}}</a>
+                            </div>
+                        </li>
+                        
+                    </ul>
+                </div>
+        </div>
+
+        <!-- 登录注册 修改密码 退出登录-->
+        <div>
+            <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+                <div class="modal-dialog" role="document">
+                    <!-- 登录注册 -->
+                    <div v-if="login_regest_view_stadus&&!is_login">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                            <h4 class="modal-title" id="myModalLabel" @click="login_view()" :class="{selected:login_stadus}">登录</h4>
+                            <h4 class="modal-title" id="myModalLabel" @click="regise_view()" :class="{selected:regest_stadus}">注册</h4>
+                            </div>
+                            <!-- 登陆 -->
+                            <div class="index_login" v-if="login_stadus">
+                                <div class="modal-body">
+                                    <h4 class="modal-title" id="myModalLabel" @click="zhanghao_login_view()" :class="{selected:zhanghao_login}">账号登录</h4>
+                                    <h4 class="modal-title" id="myModalLabel" @click="weixin_login_view()" :class="{selected:weixin_login}">微信登陆</h4>
+                                    
+                                    <div class="zhanghao_login" v-if="zhanghao_login">
+                                    
+                                        <label for="">
+                                            账号：<input v-model="loginInfo.bishe_register_username"  type="text" class="form-control" placeholder="输入账号">
+                                            
+                                        </label>
+                                        <label for="">
+                                            密码： <input v-model="loginInfo.bishe_register_password"  type="password" class="form-control" placeholder="输入密码">
+                                        
+                                        </label>  
+                                    </div>
+                                    <div class="weixin_login" v-if="weixin_login">
+                                        <img src="./imgs/weixin_login.png" alt="">
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                                    <button type="button" class="btn btn-primary" @click="login()">登录</button>
+                                </div>
+                            </div>
+                            <!-- 注册 -->
+                            <div class="index_regist" v-if="regest_stadus">
+                                <div class="modal-body">
+                                    <label for="">
+                                        账号：<input v-model="registerInfo.bishe_register_username" type="text" class="form-control" placeholder="输入账号">
+                                        
+                                    </label>
+                                    <label for="">
+                                        密码： <input v-model="registerInfo.bishe_register_password" type="password" class="form-control" placeholder="输入密码">
+                                    </label> 
+                                    <label for="">
+                                        重复密码： <input v-model="registerInfo.bishe_register_repassword" type="password" class="form-control" placeholder="在输入密码">
+                                    </label>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                                    <button type="button" @click="register()" class="btn btn-primary">注册</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- 修改密码 -->
+                    <div class="update_password" v-if="update_password_view_stadus">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                            <h4 class="modal-title" id="myModalLabel">修改密码</h4>
+                            </div>
+                            <div class="">
+                                <div class="modal-body">
+                                    <label for="">
+                                        原密码：<input v-model="updateUserInfo.bishe_register_password" type="password" class="form-control" placeholder="输入账号">
+                                        
+                                    </label>
+                                    <label for="">
+                                        新密码： <input v-model="updateUserInfo.bishe_register_newpassword"  type="password" class="form-control" placeholder="输入旧密码">
+                                    </label> 
+                                    <label for="">
+                                        重复新密码： <input v-model="updateUserInfo.bishe_register_renewpassword"  type="password" class="form-control" placeholder="输入新密码">
+                                    </label>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                                    <button type="button" @click="updateUserPassword()" class="btn btn-primary">修改</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 退出登陆 -->
+                    <div class="login_out" v-if="login_out_view_stadus">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        
+                            </div>
+                            <div class="">
+                                <div class="modal-body">
+                                    <h4 class="modal-title" id="myModalLabel">确认退出登录？</h4>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                                    <button type="button" class="btn btn-primary" @click="loginOut()">退出登录</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- 消息提醒 -->
+                    <div  v-if="is_login_stadus">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        
+                            </div>
+                            <div class="">
+                                <div class="modal-body">
+                                    <h4 class="modal-title" id="myModalLabel">{{masg}}</h4>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- 完善个人信息 -->
+                    <div class="update_userInfo" v-if="update_userInfo_stadus">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                            <h4 class="modal-title" id="myModalLabel">完善个人信息</h4>
+                            </div>
+                            <div class="">
+                                <div class="modal-body">
+                                    <label for="">
+                                        用户昵称：<input v-model="updateUsrAllInfo.bishe_userInfo_nike" type="text" class="form-control" placeholder="输入用户昵称">
+                                        
+                                    </label>
+                                    <label for="">
+                                        性别：<select name=""   v-model="updateUsrAllInfo.bishe_userInfo_sex"  class="form-control">
+                                                <option value="男">男</option>
+                                                <option value="女">女</option>
+                                            </select>
+                                    </label> 
+                                    <label for="">
+                                        邮箱： <input v-model="updateUsrAllInfo.bishe_userInfo_email"  type="email" class="form-control" placeholder="输入邮箱">
+                                    </label>
+                                
+                                    <label for="exampleInputFile">头像
+                                            <input type="file" id="updateUser_touxiang" accept="image/gif, image/jpeg,image/png,image/jpg" >
+                                        <p class="help-block">不传头像会默认头像</p>
+                                    </label>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                                    <button type="button" class="btn btn-primary" @click="update_userInfo_img()">确定修改</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- 我的收藏 -->
+        <div v-if="my_collection_stadus" class="my_collection">
+            <div class="cities_left">
+                <h1>我的收藏</h1>
+            </div>
+            <div class="cities_right">
+                <div class="sight" v-for="sight in sights">
+                    <span class="close" style="color:red" aria-hidden="true">&times;</span>
+                    <div>
+                        <img :src="sight.bishe_tour_image" >
+                    </div>
+                    <div>
+                        <span :class="{selected:my_collection_stadus}">[{{sight.bishe_tour_name}} ]</span><span>{{sight.bishe_tour_provinceName}}/{{sight.bishe_tour_cityName}}</span><span :class="{selected:my_collection_stadus}">时间：{{sight.bishe_tour_time}}</span>
+                    </div>
+                    <div>
+                        <p>{{sight.bishe_tour_desc}}</p>
+                    </div>
+                </div>
+            
+            </div>
+        </div>
+        
+        <!-- 城市旅游展示 -->
+        <div v-if="all_cities_stadus" class="citys_box">
+            <div class="cities_left">
+               <h4>{{city}}/{{city_ci}}</h4>
+               <ul class="nav navbar-nav">
+                <li><a href="#">3月14日 </a></li>
+                <li><a href="#"> 周四 </a></li>
+                <li><a href="#"> 西安 </a></li>
+                <li><a href="#">多云 16°c~4°c</a></li>
+              </ul>
+            </div>
+            <div class="cities_right">
+                <div class="sight" v-for="sight in sights">
+                    <div>
+                        <img :src="sight.bishe_tour_image" >
+                    </div>
+                    <div>
+                        <span :class="{selected:all_cities_stadus}">[{{sight.bishe_tour_name}} ]</span><span>{{sight.bishe_tour_provinceName}}/{{sight.bishe_tour_cityName}}</span><span :class="{selected:all_cities_stadus}">时间：{{sight.bishe_tour_time}}</span>
+                    </div>
+                    <div>
+                        <p>{{sight.bishe_tour_desc}} <span v-if="!collected" class="sel shoucang"><img src="./imgs/sel.png" alt=""></span> <span  v-if="collected"  class="seled shoucang"><img src="./imgs/seled.png" alt=""></span></p>
+                    </div>
+                </div>
+            
+            </div>
+        </div>
+        <!-- footer -->
+        <div class="footer" >
+            版权所有 © 二八驴友网  老伍有限公司
+        </div>
+    </div>
+
+</body>
+</html>
