@@ -52,7 +52,7 @@
                 </form> -->
                 <ul class="nav navbar-nav navbar-right" >
                     <li style="color:rgb(255,157,0);" @mouseenter="my_cities_view()" @mouseleave="my_cities_hide_view()">
-                        <a href="javascript:;"><i class="iconfont"></i> {{city}} /{{city_ci}} / 切换城市</a>
+                        <a href="javascript:;"><i class="iconfont"  aria-hidden="true"><img src="./imgs/ditu.png" alt="" style="width:20px;height:20px"></i> {{city}} /{{city_ci}} / 切换城市</a>
                         
                         <div id="ditu" v-if="my_cities_stadus">
                             <a href="javascript:;" v-for="cit in cities" :value="cit.bishe_province_name" @click="cities_cp(cit.bishe_province_name,cit.bishe_province_id)" :class="{ 'selected':cit.bishe_province_name===city }" >{{cit.bishe_province_name}}</a>
