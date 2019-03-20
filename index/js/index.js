@@ -190,7 +190,7 @@ $(function(){
             //更新个人信息
             updateUsrAllInfo:{
                 "bishe_userInfo_nike":'',
-                "bishe_userInfo_sex":'男',
+                "bishe_userInfo_sex":'m',
                 "bishe_userInfo_email":''
             }
         },
@@ -546,7 +546,7 @@ $(function(){
             //退出登录接口
             loginOut(){
                 var that=this;
-                this.$http.get('192.168.1.198:8080/register/logout').then((response) => {
+                this.$http.get('http://192.168.1.198:8080/register/logout').then((response) => {
                     // 响应成功回调
                     
                     that.masg="退出登陆成功！";
@@ -557,69 +557,70 @@ $(function(){
                 }, (response) => {
                     // 响应错误回调
                     console.log(000);
+                    that.masg="退出登陆成功！";
+                    that.login_out_view_stadus=false;
+                    that.is_login_stadus=true;
+                    tuichudenglu();
                 });
                 
             },
             //更新个人信息
             update_userInfo(){
+                var that=this;
                 let data={
-                    "bishe_userInfo_nike":this.updateUsrAllInfo.bishe_userInfo_nike,
-                    "bishe_userInfo_sex":this.updateUsrAllInfo.bishe_userInfo_sex,
-                    "bishe_userInfo_email":this.updateUsrAllInfo.bishe_userInfo_email
+                    "bishe_register_id":this.user.object.bishe_register_id,
+                    "bishe_user_info_nike":this.updateUsrAllInfo.bishe_userInfo_nike,
+                    "bishe_user_info_sex":this.updateUsrAllInfo.bishe_userInfo_sex,
+                    "bishe_user_info_email":this.updateUsrAllInfo.bishe_userInfo_email
                 }
                 data=JSON.stringify(data);
                 console.log(data);
 
                 $.ajax({
-                    url:'http://localhost:8080/userInfo/updateUserInfo',
+                    url:'http://192.168.1.198:8080/userInfo/addUserInfo',
                     type:'post',
                     data:data,
                     contentType: 'application/json',
                     success:function(data){
 
+                        console.log("1111");
+                        console.log(data);
+                        addUser_Info_Img();
+                        //that.update_userInfo_img();
                     },
                     error:function(data){
-                          
+                        console.log("00000");
+                        
                     }
                 });
             },
             //更新个人信息的照片上传
             update_userInfo_img(){
+                var that=this;
                 let x = document.getElementById('updateUser_touxiang').files[0];
                 console.log(x);
                 let params = new FormData() ; //创建一个form对象
                 params.append('file',x,x.name);  //append 向form表单添加数据
                 console.log(params);
+
                 //添加请求头  通过form添加的图片和文件的格式必须是multipart/form-data
-                let config = {
+                // let config = {
+                //     headers:{'enctype':'multipart/form-data'}
+                // };
+                const instance=axios.create({
+                    withCredentials: true,
                     headers:{'Content-Type':'multipart/form-data'}
-                };
-                axios.post("http://localhost:8080/userInfo/updateUserInfoImage",params,config)
+                   }) 
+                instance.post("http://192.168.1.198:8080/userInfo/addUserInfoImage",params)
                     .then(function(res){
                         console.log(res);
-                        alert("更新成功！");
-                    }.bind(this))
-                    .catch(function (error) {
-                         console.log(error);
-                })
+                        this.masg="个人信息更新成功！";
+                        this.update_userInfo_stadus=false;
+                        this.is_login_stadus=true;
+                    }).catch(function (error) {
+                        console.log(error);
+                   });
                 
-                // var formData = new FormData();
-                // formData.append('bishe_userInfo_image', $('#updateUser_touxiang')[0].files[0]);
-                // $.ajax({
-                //     url:'http://localhost:8080/userInfo/updateUserInfoImage',
-                //     type:'post',
-                //     cache: false,
-                //     data:formData,
-                //     processData: false,
-                //     contentType: false,
-                //     ContentType="multipart/form-data",
-                //     success:function(data){
-                //             alert("更新成功！");
-                //     },
-                //     error:function(data){
-                            
-                //     }
-                // });
             }
 
         },
@@ -637,6 +638,10 @@ $(function(){
     }
     function updateWangye(){
         index.user=JSON.parse(window.localStorage.getItem("userInfo"));
+        // var str=window.localStorage.getItem("touxiang");
+        // if(str!='none'){
+        //     index.user_touxiang=window.localStorage.getItem("touxiang");
+        // }
         console.log(index.user);
         if(index.user.code==2){//管理员
             index.is_login=true;
@@ -649,10 +654,34 @@ $(function(){
     }
     updateWangye();
     function tuichudenglu(){
-        window.localStorage.setItem("userInfo",{
+        window.localStorage.setItem("userInfo",JSON.stringify({
             "code":100
-        });
+        }));
         window.location.reload();
+    }
+    function addUser_Info_Img(){
+        var formData = new FormData();
+        formData.append('file', $('#updateUser_touxiang')[0].files[0]);
+        $.ajax({
+            url:'http://192.168.1.198:8080/userInfo/addUserInfoImage',
+            type:'post',
+            cache: false,
+            data:formData,
+            processData: false,
+            contentType: false,
+            //enctype="multipart/form-data",
+            success:function(data){
+                    console.log(data);
+                    window.localStorage.setItem("touxiang","http://192.168.1.198:8080"+data);
+                    index.user_touxiang=window.localStorage.getItem("touxiang");
+                    index.masg="个人信息更新成功！";
+                    index.update_userInfo_stadus=false;
+                    index.is_login_stadus=true;
+            },
+            error:function(data){
+                    
+            }
+        });
     }
 
 });
