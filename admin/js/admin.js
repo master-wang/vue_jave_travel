@@ -1,6 +1,17 @@
 $(function(){
+    function GetQueryString(name)
+    {
+        var reg = new RegExp("(^|&)"+ name +"=([^&]*)(&|$)");
+        var r = window.location.search.substr(1).match(reg);//search,查询？后面的参数，并匹配正则
+        if(r!=null)return  unescape(r[2]); return null;
+    }
+
     //vue实例
-    var User={name:'wang',img:'./imgs/user_img.png'};
+    var User={
+        name:GetQueryString('name'),
+        code:GetQueryString('code'),
+        bishe_register_id:GetQueryString('bishe_register_id'),
+    };
     window.localStorage.setItem("userInfo",JSON.stringify(User));
 
     var routes = [
@@ -36,7 +47,7 @@ $(function(){
             component : {
                 template : `
                 <div class="jumbotron">
-                <p>成功</p>
+                <p>{{$route.query.msg}}</p>
                 </div>`
             },
 
@@ -426,9 +437,8 @@ $(function(){
                     <div class="form-group">
                         <label for="inputPassword3" class="col-sm-2 control-label">景点所在的省份</label>
                         <div class="col-sm-10">
-                        <select v-model="tourInfo.bishe_tour_provinceName"  name="" id="" class="form-control">
-                            <option value="陕西">陕西</option>
-                            <option value="北京">北京</option>
+                        <select v-model="tourInfo.bishe_tour_provinceid" @change="getAll_cities()" class="form-control">
+                             <option v-for="provence in cities" :value="provence.bishe_province_id">{{provence.bishe_province_name}}</option>
                         </select>
                         </div>
                     </div>
@@ -436,8 +446,7 @@ $(function(){
                         <label for="inputPassword3" class="col-sm-2 control-label">景点所在的市</label>
                         <div class="col-sm-10">
                         <select v-model="tourInfo.bishe_tour_cityName"  name="" id="" class="form-control">
-                            <option value="陕西">陕西</option>
-                            <option value="北京">北京</option>
+                            <option v-for="city in cli" :value="city.bishe_city_name">{{city.bishe_city_name}}</option>
                         </select>
                         </div>
                     </div>
@@ -450,12 +459,12 @@ $(function(){
                     <div class="form-group">
                         <label for="inputPassword3" class="col-sm-2 control-label">景点的照片</label>
                         <div class="col-sm-10">
-                            <input type="file" id="tourAddImg">
+                            <input type="file" id="tourAddImg" accept="image/gif, image/jpeg,image/png,image/jpg" >
                         </div>
                     </div>
                     <div class="form-group">
                         <div class="col-sm-offset-2 col-sm-10">
-                        <button type="submit" class="btn btn-primary" @click="AddTourInfo()">添加</button>
+                        <button type="button" class="btn btn-primary" @click="AddTourInfo()">添加</button>
                         </div>
                     </div>
                 </form>
@@ -464,29 +473,72 @@ $(function(){
                     return {
                         tourInfo:{
                             "bishe_tour_name":'',
-                            "bishe_tour_provinceName":'陕西',
-                            "bishe_tour_cityName":'北京',
+                            "bishe_tour_provinceid":'',
+                            "bishe_tour_cityName":'',
                             "bishe_tour_desc":''
-                        }
+                        },
+                        cities:[],
+                        cli:[]
                     }
                 },
                 methods:{
+                    getAll_provence(){
+                        var that=this;
+                        $.ajax({
+                            url:"http://192.168.1.198:8080/province/getProvinceList",
+                            type:'get',
+                            success:function(data){
+                                that.cities=data;
+                                
+                            },
+                            error:function(data){
+                                console.log(data);
+                            }
+                        });
+                    },
+                    getAll_cities(){
+                        var that=this;
+                         //请求市
+                    $.ajax({
+                        url:"http://192.168.1.198:8080/city/getCityList/"+that.tourInfo.bishe_tour_provinceid,
+                        type:'get',
+                        success:function(data){
+                            console.log(data);
+                            that.cli=data;
+                        
+                        },
+                        error:function(data){
+                            console.log(data);
+                        }
+                    });
+                    },
                     AddTourInfo(){
+                        var that=this;
+                        var obj=JSON.parse(window.localStorage.getItem("userInfo"));
+                        var bishe_register_id=obj.bishe_register_id;
+                        var name='';
+                        for(var i=0;i<that.cities.length;i++){
+                            if(this.tourInfo.bishe_tour_provinceid==that.cities[i].bishe_province_id){
+                                name=that.cities[i].bishe_province_name;
+                            }
+                        }
                         var data={
+                            "bishe_register_id":bishe_register_id,
                             "bishe_tour_name":this.tourInfo.bishe_tour_name,
-                            "bishe_tour_provinceName":this.tourInfo.bishe_tour_provinceName,
-                            "bishe_tour_cityName":this.tourInfo.bishe_tour_cityName,
+                            "bishe_tour_province_name":name,
+                            "bishe_tour_city_name":this.tourInfo.bishe_tour_cityName,
                             "bishe_tour_desc":this.tourInfo.bishe_tour_desc
                         }
                         data=JSON.stringify(data);
                         console.log(data);
                         $.ajax({
-                            url:'http://localhost:8080/tour/addTour',
+                            url:'http://192.168.1.198:8080/tour/addTour',
                             type:'post',
                             data:data,
                             contentType: 'application/json',
                             success:function(data){
-
+                                console.log(data);
+                                that.AddTourInfo_img();
                             },
                             error:function(data){
                                 
@@ -494,25 +546,36 @@ $(function(){
                         });
                     },
                     AddTourInfo_img(){
-                        let x = document.getElementById('tourAddImg').files[0];
-                        console.log(x);
-                        let params = new FormData() ; //创建一个form对象
-                        params.append('file',x,x.name);  //append 向form表单添加数据
-                        console.log(params);
-                        //添加请求头  通过form添加的图片和文件的格式必须是multipart/form-data
-                        let config = {
-                            headers:{'Content-Type':'multipart/form-data'}
-                        };
-                        axios.post("http://localhost:8080/tour/addTourImage",params,config)
-                            .then(function(res){
-                                console.log(res);
-                                alert("更新成功！");
-                            }.bind(this))
-                            .catch(function (error) {
-                                console.log(error);
-                        })
+                        var that=this;
+                        var formData = new FormData();
+                        formData.append('file', $('#tourAddImg')[0].files[0]);
+                        $.ajax({
+                            url:'http://192.168.1.198:8080/tour/addTourImage',
+                            type:'post',
+                            cache: false,
+                            data:formData,
+                            processData: false,
+                            contentType: false,
+                            //enctype="multipart/form-data",
+                            success:function(data){
+                                    console.log(data);
+                                    that.$router.push({
+                                        path: '/success',
+                                        query: {
+                                          "msg":"添加旅游信息成功！"
+                                        }
+                                      })
+                            },
+                            error:function(data){
+                                    
+                            }
+                        });
                     }
+                },
+                created(){
+                    this.getAll_provence();
                 }
+
 
             },
 
@@ -534,7 +597,22 @@ $(function(){
         }
         
     });  
-
+    function updateWangye(){
+        index.user=JSON.parse(window.localStorage.getItem("userInfo"));
+        
+        console.log(index.user);
+        if(index.user.code=="2"){//管理员
+            // index.is_login=true;
+            // index.isAdmin=true;
+        }
+        else{
+            //普通用户
+            
+            alert("你不是管理员！！！");
+            window.location.href="../index/index.html";
+        }
+    }
+    updateWangye();
 
 
 });

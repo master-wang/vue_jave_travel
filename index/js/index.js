@@ -607,21 +607,39 @@ $(function(){
                 // let config = {
                 //     headers:{'enctype':'multipart/form-data'}
                 // };
-                const instance=axios.create({
-                    withCredentials: true,
-                    headers:{'Content-Type':'multipart/form-data'}
-                   }) 
-                instance.post("http://192.168.1.198:8080/userInfo/addUserInfoImage",params)
-                    .then(function(res){
-                        console.log(res);
-                        this.masg="个人信息更新成功！";
-                        this.update_userInfo_stadus=false;
-                        this.is_login_stadus=true;
-                    }).catch(function (error) {
-                        console.log(error);
-                   });
+                // const instance=axios.create({
+                //     withCredentials: true,
+                //     headers:{'Content-Type':'multipart/form-data'}
+                //    }) 
+                // instance.post("http://192.168.1.198:8080/userInfo/addUserInfoImage",params)
+                //     .then(function(res){
+                //         console.log(res);
+                //         this.masg="个人信息更新成功！";
+                //         this.update_userInfo_stadus=false;
+                //         this.is_login_stadus=true;
+                //     }).catch(function (error) {
+                //         console.log(error);
+                //    });
                 
+                
+                axios({
+                    method: 'post',
+                    url: '/user/12345',
+                    data: {
+                        firstName: 'Fred',
+                        lastName: 'Flintstone'
+                    }
+                }).then(function (response) {
+                    console.log(response);
+                }).catch(function (error) {
+                    console.log(error);
+                });
+            },
+            enterBackweb(){
+                window.location.href="../admin/admin.html?name="+this.user.object.bishe_register_username+
+                "&code="+this.user.code+"&bishe_register_id="+this.user.object.bishe_register_id;
             }
+
 
         },
         //实例化vue时创建的函数 与执行
